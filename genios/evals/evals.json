@@ -1,0 +1,61 @@
+{
+ "skill_name": "genios",
+ "evals": [
+  {
+   "id": 1,
+   "name": "build-workflow-script",
+   "prompt": "我想在 GeniOS 团队空间里新建一个工作流叫 tmp-fraud-check：输入一句话 text，用 LLM 判断是否涉及诈骗，如果是就输出“疑似诈骗”，否则输出“未发现风险”。帮我写一个用平台管理 API 搭建它的 Python 脚本（节点、配置、连线、校验都要有），先别真的执行任何写操作。",
+   "expected_output": "一个用 CreateFlowNode/UpdateFlowNode/UpdateFlowNodeLinks 等节点级 API 搭建的脚本，节点格式正确（LLM 文本输出 raw_output、Start 参数带 Desc、选择器端口 if01/else、字面值 JsonValue、Links 字段），复用 scripts/genios_flow.py 的 Flow 与 genios_api.call，不执行写操作",
+   "files": [],
+   "assertions": [
+    "脚本使用节点级 API（CreateFlowNode/UpdateFlowNode/UpdateFlowNodeLinks 或 genios_flow.Flow）",
+    "连线字段名为 Links",
+    "LLM 文本输出变量为 raw_output",
+    "Start 输入参数带 Desc",
+    "选择器端口使用 if01 与 else",
+    "字面值使用 JsonValue",
+    "写入团队空间（读取 GENIOS_TEAM_WORKSPACE 或 genios-project.md 中的 WorkspaceID）",
+    "脚本默认不写平台（dry-run 或 --apply 开关）"
+   ]
+  },
+  {
+   "id": 2,
+   "name": "diagnose-model-error",
+   "prompt": "我们的主入口智能体刚才在 API 里回复“大模型接口调用出错，请联系管理员”，你帮我查一下是什么原因，可以调平台的只读接口或工作流试运行，但不要改任何配置、不要发布。",
+   "expected_output": "通过工作流调试接口或模型列表定位到具体错误（如 429 限流/404 无权限/参数不兼容），给出区分方法和处理建议，不修改平台配置",
+   "files": [],
+   "assertions": [
+    "使用了工作流调试接口（SubmitWorkflowDebug/QueryDebugProcess）或检查了线上发布配置",
+    "给出具体错误证据（错误码、message 或线上配置字段）",
+    "给出区分限流/无权限/参数不兼容的方法",
+    "没有执行任何写或发布操作"
+   ]
+  },
+  {
+   "id": 3,
+   "name": "config-not-taking-effect",
+   "prompt": "我刚用 SaveAppConfigDraft 和 PublishAppConfig 改了主入口智能体的提示词，但用对话 API 测，它还是按旧提示词回答。为什么？要怎么做才能生效？只说明原因和步骤，不要真的发布。",
+   "expected_output": "指出 API 渠道绑定具体 PublishID，需要 PublishAppChannel 并等待自动审核（InReview→Success，约 1.5—3 分钟），给出轮询与核对线上版本的方法",
+   "files": [],
+   "assertions": [
+    "指出需要 PublishAppChannel 重新发布 API 渠道",
+    "说明渠道自动审核 InReview→Success 及等待时长",
+    "说明 API 渠道绑定具体 PublishID",
+    "给出核对线上生效版本的方法（GetAppPublishedChannels 或 ListPublishAppChannelHistory）"
+   ]
+  },
+  {
+   "id": 4,
+   "name": "multi-turn-state-design",
+   "prompt": "情景陪练我想这样改：每一轮都调用一次工作流，工作流返回当前剧情节点和累计得分（state），智能体下一轮把 state 原样传回工作流。这个设计在 GeniOS 单智能体模式下可行吗？请给出结论和理由，以及更合适的做法。",
+   "expected_output": "明确指出不可行：平台不把工具返回结果放进下一轮模型上下文（暗号实验确认，与模型能力无关）；建议多轮由智能体管理、工作流在结束时一次性调用并传入全部原话",
+   "files": [],
+   "assertions": [
+    "明确结论：该设计不可行",
+    "指出原因是平台不把工具返回结果放进下一轮模型上下文（非模型能力）",
+    "给出实验或实测证据",
+    "建议智能体管理多轮、工作流在结束时一次性调用并传入全部原话/字段"
+   ]
+  }
+ ]
+}

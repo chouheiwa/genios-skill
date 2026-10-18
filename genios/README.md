@@ -49,3 +49,9 @@ genios publish APP_ID [--apply]
 ## Release
 
 `.github/workflows/build-genios.yml` 只在推送 `v*` 标签时运行 `go test`、`go vet`，为 macOS、Linux 和 Windows 构建二进制，并把 `SKILL.md`、`project.example.md`、`references/`、`evals/` 和 `bin/genios` 打包成完整 skill 压缩包后创建 GitHub Release。
+
+macOS/Linux 用户也可以在目标项目根目录执行一行安装命令：
+
+```bash
+case "$(uname -s)-$(uname -m)" in Darwin-arm64|Darwin-aarch64) p=darwin-arm64;; Darwin-x86_64) p=darwin-amd64;; Linux-aarch64|Linux-arm64) p=linux-arm64;; Linux-x86_64|Linux-amd64) p=linux-amd64;; *) echo "unsupported platform" >&2; exit 1;; esac; d="$PWD/.agents/skills/genios"; mkdir -p "$d"; curl -fsSL "https://github.com/chouheiwa/genios-skill/releases/latest/download/genios-skill-$p.tar.gz" | tar -xzf - -C "$d"; chmod +x "$d/bin/genios"
+```

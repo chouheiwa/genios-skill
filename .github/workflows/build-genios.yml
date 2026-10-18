@@ -71,9 +71,11 @@ jobs:
           cp -R references dist/stage/references
           cp -R evals dist/stage/evals
           archive="genios-skill-${TAG}-${PLATFORM}.tar.gz"
+          stable_archive="genios-skill-${PLATFORM}.tar.gz"
           suffix=""
           if [ "$PLATFORM" = "windows-amd64" ]; then suffix=".exe"; fi
           tar -C dist/stage -czf "$archive" .
+          cp "$archive" "$stable_archive"
           tar -tzf "$archive" | grep -qx './SKILL.md'
           tar -tzf "$archive" | grep -qx "./bin/genios${suffix}"
           echo "archive=$archive" >> "$GITHUB_OUTPUT"
@@ -83,7 +85,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: genios-skill-${{ github.ref_name }}-${{ matrix.name }}
-          path: genios/genios-skill-${{ github.ref_name }}-${{ matrix.name }}.tar.gz
+          path: |
+            genios/genios-skill-${{ github.ref_name }}-${{ matrix.name }}.tar.gz
+            genios/genios-skill-${{ matrix.name }}.tar.gz
           if-no-files-found: error
           retention-days: 7
 

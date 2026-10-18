@@ -32,6 +32,14 @@ skill 的平台规则和操作说明位于 [`genios/SKILL.md`](genios/SKILL.md)�
 
    Claude Code 用户可以把目标目录换成 `.claude/skills/genios`。解压后，目录中应包含 `SKILL.md`、`references/` 和 `bin/genios`。
 
+如果希望让 Agent 直接安装，可以在目标项目根目录执行下面这一行（适用于 macOS 和 Linux）：
+
+```bash
+case "$(uname -s)-$(uname -m)" in Darwin-arm64|Darwin-aarch64) p=darwin-arm64;; Darwin-x86_64) p=darwin-amd64;; Linux-aarch64|Linux-arm64) p=linux-arm64;; Linux-x86_64|Linux-amd64) p=linux-amd64;; *) echo "unsupported platform" >&2; exit 1;; esac; d="$PWD/.agents/skills/genios"; mkdir -p "$d"; curl -fsSL "https://github.com/chouheiwa/genios-skill/releases/latest/download/genios-skill-$p.tar.gz" | tar -xzf - -C "$d"; chmod +x "$d/bin/genios"
+```
+
+这个命令不需要 Python、Node.js、Go 或 GitHub CLI；只需要系统自带的 `curl`、`tar` 和 Unix shell。Windows 用户请下载 Release 中的 `windows-amd64` 压缩包后解压到 `.agents/skills/genios`。
+
 ### 方式二：从源码安装
 
 源码安装需要 Go 1.22 或更新版本，运行时不需要 Python、Node.js 或第三方包：

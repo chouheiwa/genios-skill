@@ -28,6 +28,8 @@ GOOS=windows GOARCH=amd64 go build -trimpath -ldflags='-s -w' -o dist/genios-win
 
 `setup` 启动只监听 `127.0.0.1` 的本地页面，只负责账号密码和 session。WorkspaceID 属于项目配置：把它写入使用方项目根目录的 `genios-project.md`，CLI 会自动读取；也可以临时设置 `GENIOS_TEAM_WORKSPACE` 覆盖它。
 
+Windows 使用 `bin\\genios.exe setup`；Windows 的文件权限由系统 ACL 管理，CLI 不执行 Unix `0600` 权限位检查。
+
 凭据和 session 默认保存在操作系统用户配置目录并使用 `0600`。自定义凭据可用 `GENIOS_CREDENTIALS_FILE`，自定义 session 可用 `GENIOS_SESSION_FILE`；session 必须放在项目目录外。
 
 ## 命令

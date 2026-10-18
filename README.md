@@ -40,6 +40,14 @@ skill 的平台规则和操作说明位于 [`genios/SKILL.md`](genios/SKILL.md)�
 
 Agent 应自行完成平台判断、下载、解压和执行权限设置。macOS/Linux 使用稳定资产名 `genios-skill-darwin-arm64.tar.gz`、`genios-skill-darwin-amd64.tar.gz`、`genios-skill-linux-arm64.tar.gz` 或 `genios-skill-linux-amd64.tar.gz`；Windows 使用 `genios-skill-windows-amd64.tar.gz`。安装不需要 Python、Node.js、Go 或 GitHub CLI。
 
+Windows 安装完成后，Agent 应使用 `bin/genios.exe`：
+
+```powershell
+\.agents\skills\genios\bin\genios.exe setup
+```
+
+WorkspaceID 写入项目根目录的 `genios-project.md` 后，Windows PowerShell 不需要额外设置环境变量；临时覆盖时使用 `$env:GENIOS_TEAM_WORKSPACE = "<WorkspaceID>"`。
+
 ### 方式二：从源码安装
 
 源码安装需要 Go 1.22 或更新版本，运行时不需要 Python、Node.js 或第三方包：

@@ -18,6 +18,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -99,7 +100,7 @@ func ReadCredentials(path string) (Credentials, error) {
 	if err != nil {
 		return Credentials{}, err
 	}
-	if st.Mode().Perm()&0077 != 0 {
+	if runtime.GOOS != "windows" && st.Mode().Perm()&0077 != 0 {
 		return Credentials{}, fmt.Errorf("%s 权限过宽，请执行 chmod 600", path)
 	}
 	b, err := os.ReadFile(path)
@@ -131,7 +132,7 @@ func LoadSession(path string) (Session, error) {
 	if err := OutsideProject(path); err != nil {
 		return Session{}, err
 	}
-	if st, err := os.Stat(path); err == nil && st.Mode().Perm()&0077 != 0 {
+	if st, err := os.Stat(path); err == nil && runtime.GOOS != "windows" && st.Mode().Perm()&0077 != 0 {
 		return Session{}, fmt.Errorf("%s 权限过宽，请执行 chmod 600", path)
 	}
 	b, err := os.ReadFile(path)

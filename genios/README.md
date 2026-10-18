@@ -50,8 +50,6 @@ genios publish APP_ID [--apply]
 
 `.github/workflows/build-genios.yml` 只在推送 `v*` 标签时运行 `go test`、`go vet`，为 macOS、Linux 和 Windows 构建二进制，并把 `SKILL.md`、`project.example.md`、`references/`、`evals/` 和 `bin/genios` 打包成完整 skill 压缩包后创建 GitHub Release。
 
-macOS/Linux 用户也可以在目标项目根目录执行一行安装命令：
+如果由 Agent 安装，请把下面的指令交给 Agent，让它直接执行安装并验证结果：
 
-```bash
-case "$(uname -s)-$(uname -m)" in Darwin-arm64|Darwin-aarch64) p=darwin-arm64;; Darwin-x86_64) p=darwin-amd64;; Linux-aarch64|Linux-arm64) p=linux-arm64;; Linux-x86_64|Linux-amd64) p=linux-amd64;; *) echo "unsupported platform" >&2; exit 1;; esac; d="$PWD/.agents/skills/genios"; mkdir -p "$d"; curl -fsSL "https://github.com/chouheiwa/genios-skill/releases/latest/download/genios-skill-$p.tar.gz" | tar -xzf - -C "$d"; chmod +x "$d/bin/genios"
-```
+> 请在当前项目中自动安装 GeniOS skill。请根据当前操作系统和 CPU 架构，从 `https://github.com/chouheiwa/genios-skill/releases/latest` 下载对应的完整 Release 压缩包，解压到当前项目的 `.agents/skills/genios/`，确认其中存在 `SKILL.md`、`references/` 和可执行的 `bin/genios`，然后告诉我安装结果和实际路径。安装过程中直接执行必要的 shell 命令，不要只给我操作步骤。

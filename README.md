@@ -32,13 +32,13 @@ skill 的平台规则和操作说明位于 [`genios/SKILL.md`](genios/SKILL.md)�
 
    Claude Code 用户可以把目标目录换成 `.claude/skills/genios`。解压后，目录中应包含 `SKILL.md`、`references/` 和 `bin/genios`。
 
-如果希望让 Agent 直接安装，可以在目标项目根目录执行下面这一行（适用于 macOS 和 Linux）：
+### 让 Agent 自动安装
 
-```bash
-case "$(uname -s)-$(uname -m)" in Darwin-arm64|Darwin-aarch64) p=darwin-arm64;; Darwin-x86_64) p=darwin-amd64;; Linux-aarch64|Linux-arm64) p=linux-arm64;; Linux-x86_64|Linux-amd64) p=linux-amd64;; *) echo "unsupported platform" >&2; exit 1;; esac; d="$PWD/.agents/skills/genios"; mkdir -p "$d"; curl -fsSL "https://github.com/chouheiwa/genios-skill/releases/latest/download/genios-skill-$p.tar.gz" | tar -xzf - -C "$d"; chmod +x "$d/bin/genios"
-```
+不需要用户手动执行安装命令。把下面这段话直接发送给 Agent：
 
-这个命令不需要 Python、Node.js、Go 或 GitHub CLI；只需要系统自带的 `curl`、`tar` 和 Unix shell。Windows 用户请下载 Release 中的 `windows-amd64` 压缩包后解压到 `.agents/skills/genios`。
+> 请在当前项目中自动安装 GeniOS skill。请根据当前操作系统和 CPU 架构，从 `https://github.com/chouheiwa/genios-skill/releases/latest` 下载对应的完整 Release 压缩包，解压到当前项目的 `.agents/skills/genios/`，确认其中存在 `SKILL.md`、`references/` 和可执行的 `bin/genios`，然后告诉我安装结果和实际路径。安装过程中直接执行必要的 shell 命令，不要只给我操作步骤。
+
+Agent 应自行完成平台判断、下载、解压和执行权限设置。macOS/Linux 使用稳定资产名 `genios-skill-darwin-arm64.tar.gz`、`genios-skill-darwin-amd64.tar.gz`、`genios-skill-linux-arm64.tar.gz` 或 `genios-skill-linux-amd64.tar.gz`；Windows 使用 `genios-skill-windows-amd64.tar.gz`。安装不需要 Python、Node.js、Go 或 GitHub CLI。
 
 ### 方式二：从源码安装
 

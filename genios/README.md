@@ -1,67 +1,51 @@
-# genios CLI
+# GeniOS CLI
 
-这是 GeniOS skill 的 Go CLI 实现，使用 Go 标准库，不依赖 Python、Node.js 或第三方包。
+`bin/genios` 是 GeniOS skill 的本地命令行工具。它使用 Go 标准库，不依赖 Python、Node.js 或第三方运行时。Release 压缩包已经包含对应平台的二进制；源码安装时在本目录构建即可。
 
 ## 构建
 
 ```bash
-cd genios
-go build -trimpath -ldflags='-s -w' -o genios ./cmd/genios
+go test ./...
+go vet ./...
+mkdir -p bin
+go build -trimpath -ldflags='-s -w' -o bin/genios ./cmd/genios
 ```
 
 交叉编译示例：
 
 ```bash
-GOOS=linux GOARCH=amd64 go build -trimpath -ldflags='-s -w' -o dist/genios-linux-amd64 ./cmd/genios
 GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags='-s -w' -o dist/genios-darwin-arm64 ./cmd/genios
+GOOS=linux GOARCH=amd64 go build -trimpath -ldflags='-s -w' -o dist/genios-linux-amd64 ./cmd/genios
 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags='-s -w' -o dist/genios-windows-amd64.exe ./cmd/genios
 ```
 
-## 使用
+## 认证与项目配置
 
 ```bash
-# 团队空间是项目配置，不属于登录凭据
-export GENIOS_TEAM_WORKSPACE=<团队空间 ID>
-./genios setup
-
-# 或使用环境变量指定 session 路径
-export GENIOS_SESSION_FILE=<项目外>/session.env
-./genios api ListWorkflows '{"PageNumber":1,"PageSize":20}'
-./genios api ListTraceSpans '{"PageSize":20}' --service observe
-export GENIOS_KEY_FILE=<项目外>/agent-apikey.txt
-./genios chat stream "你好"
-./genios chat block "你好"
+./bin/genios setup
+./bin/genios auth
 ```
 
-凭据和 session 默认保存在用户配置目录并使用 `0600`；自定义 session 路径必须放在项目目录外。
-发布压缩包中的二进制位于 `bin/genios`，可直接运行 `./bin/genios setup`。
+`setup` 启动只监听 `127.0.0.1` 的本地页面，只负责账号密码和 session。WorkspaceID 属于项目配置：把它写入使用方项目根目录的 `genios-project.md`，CLI 会自动读取；也可以临时设置 `GENIOS_TEAM_WORKSPACE` 覆盖它。
 
-## 子命令
+凭据和 session 默认保存在操作系统用户配置目录并使用 `0600`。自定义凭据可用 `GENIOS_CREDENTIALS_FILE`，自定义 session 可用 `GENIOS_SESSION_FILE`；session 必须放在项目目录外。
 
-```bash
-genios flow check <WorkflowID>
-genios flow run <WorkflowID> '<输入 JSON>'
-genios debug <AppID> "第一句" "第二句"
-genios qa upload --dataset-id <DatasetID> --kb-file entries.json [--apply]
-genios publish <AppID> [--apply]
-genios traces errors [数量]
+## 命令
+
+```text
+genios setup
+genios auth [--credentials FILE] [--session-file FILE]
+genios api ACTION [JSON] [--service app]
+genios chat stream|block TEXT
+genios flow check|run|reset|add|set|link ...
+genios debug APP_ID ...
+genios qa upload ...
+genios traces errors|messages ...
+genios publish APP_ID [--apply]
 ```
 
-不带 `--apply` 的问答库上传和智能体发布只读取并打印计划。
+写入类命令默认打印执行计划，使用 `--apply` 才执行平台写操作。完整参数和平台约束见上级目录的 [`SKILL.md`](SKILL.md) 及 `references/`。
 
-## GitHub Actions
+## Release
 
-`.github/workflows/build-genios.yml` 只在推送新的 `v*` 标签时运行测试、`go vet`，构建多平台完整 skill 压缩包，并自动创建 GitHub Release。
-
-## Release 安装
-
-每个 `v*` 标签会生成按平台区分的完整 skill 压缩包。解压到目标仓库的 `.agents/skills/genios` 后，skill 文件、参考资料和对应平台的 `bin/genios` 会一起就位；首次使用前执行：
-
-```bash
-chmod +x .agents/skills/genios/bin/genios
-```
-
-
-## 认证引导
-
-CLI 不会在终端或对话中回显、收集密码。没有 session 时，它会查找用户配置目录中的凭据文件；文件不存在时运行 `genios setup` 打开本地管理页面。不要把密码作为命令行参数或聊天消息发送。
+`.github/workflows/build-genios.yml` 只在推送 `v*` 标签时运行 `go test`、`go vet`，为 macOS、Linux 和 Windows 构建二进制，并把 `SKILL.md`、`project.example.md`、`references/`、`evals/` 和 `bin/genios` 打包成完整 skill 压缩包后创建 GitHub Release。

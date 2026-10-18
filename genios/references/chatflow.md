@@ -6,8 +6,7 @@
 推荐组合：**对话流做外层**（状态、路由、确定性推进），用智能体节点调用已有的对话型智能体处理开放问答（提示词、问答库、
 工作流都留在它那里）。反过来（对话型的 `AgentIDs` 里挂对话流智能体）能转交，但每次调用都是新会话，状态保存不住。
 
-脚本：`scripts/genios_flow.py`（`Flow(..., app_id=)`、`user_var`、`assign`、`agent`、`end_content`、`chatflow_config`）、
-`scripts/genios_publish.py`（`publish_chatflow`）、`scripts/genios_debug.py`（调试草稿）。
+命令：`genios flow` / `genios publish --chatflow` / `genios debug`。
 
 ## 1. 创建与配置
 
@@ -16,7 +15,7 @@
 | `CreateApp` | `WorkspaceID, Name, AppType:"ChatFlow", Description, Icon` | 返回 `AppID`；平台自动建好画布，`GetAppConfigDraft` 的 `ChatFlowConfigDraft.WorkflowID` 就是画布 ID |
 | `SaveChatFlowConfigDraft` | `AppID, ChatFlowConfig:{WorkflowID, RoundsReserved, VariableConfigs, UserVariableConfigs}` | 定义用户变量 |
 | `UpdateApp` | `AppID, Name, Description` | 改名称、简介（审核看这两项） |
-| 开场白 | `SaveChatFlowConfigDraft` 的 `ChatFlowConfig.ChatAdvancedConfig.OpeningConfig: {OpeningText, OpeningQuestions, OpeningEnabled}` | 发布时 `publish_chatflow` 从草稿带上 |
+| 开场白 | `SaveChatFlowConfigDraft` 的 `ChatFlowConfig.ChatAdvancedConfig.OpeningConfig: {OpeningText, OpeningQuestions, OpeningEnabled}` | 发布时 `genios publish --chatflow` 从草稿带上 |
 
 > 发布审核是模型自动审的，看不到画布里的 HTTP / Code 节点。画布里没有智能体节点、只靠 HTTP 取数据的对话流，简介要写明
 > “画布中的 HTTP 节点实时读取 XX”，否则会被判“未绑定知识库、工作流或工具，无法获取数据”而驳回（2026-09-27 值班助手 1.0.0 实测）。
@@ -62,7 +61,7 @@ WebAccessConfig:{AccessType:"LoginAuth"}}}}`，再 `PublishAppChannel {BuiltinCh
 - 校验用 `CheckChatflow {ID, AppID}`。`CheckWorkflow` 会报 `not support conversation_variable or user_variable when agentID is null`。
 - 调试（不用发布、不用审核）：`POST /api/bypass/app?Version=2023-08-01&Action=ChatQueryDebug`，请求体带草稿的
   `ChatFlowConfig`（对话型带 `AgentMode:"Single"` + `AppConfig`）、`Query`，接着聊传 `ConversationID`。
-  走 `/api/app?Action=ChatQueryDebug` 会返回 200 但内容为空；事件行形如 `data:data: {...}`。封装在 `genios_debug.py`。
+  走 `/api/app?Action=ChatQueryDebug` 会返回 200 但内容为空；事件行形如 `data:data: {...}`。使用 `genios debug`。
 - **调试模式读不回用户变量**：变量能写入（`GetAppUserVariables {AppID, ConversationID}` 查得到），下一轮读到的仍是空。
   涉及跨轮状态的验证只能发布后用对话 API 做。
 - 发布：`PublishAppConfig {AppID, ChatFlowConfig: {...草稿, Version, VersionDescription}}`，不传 `AgentMode`；
@@ -74,4 +73,4 @@ WebAccessConfig:{AccessType:"LoginAuth"}}}}`，再 `PublishAppChannel {BuiltinCh
 - 状态存成一个 JSON 字符串变量（如 `{"node": "N2", "turn": 1, "observed": [...]}`），用 `IDLE` 表示不在流程中，便于路由判断。
 - 路由、推进、计分放 Code 节点（可本地单测）；LLM 只做“这句话属于哪一类”的识别和台词生成。
 - 紧急情况在识别阶段就分出来，给固定回复并清空状态，不交给台词模型。
-- 实例建议：画布构建脚本、路由 Code、推进 Code 各放一个 `.py`，路由与推进逻辑在本地写单元测试。
+- 实例建议：画布构建脚本、路由 Code、推进 Code 各放一个本地源码文件，路由与推进逻辑在本地写单元测试。

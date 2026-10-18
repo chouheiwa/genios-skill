@@ -1,6 +1,6 @@
 # 工作流：用节点级 API 搭建、调试、发布
 
-不需要画布。编辑器保存画布调用的就是下面这些接口（从 `/resources/product/llm` 子应用前端代码核实），`scripts/genios_flow.py`
+不需要画布。编辑器保存画布调用的就是下面这些接口（从 `/resources/product/llm` 子应用前端代码核实），`genios flow` 和 `genios api`
 已经封装好：`Flow.reset / add / set / link / check / run`，以及 `start_inputs / llm / code / condition / merge / end / ref / literal`
 这些生成 NodeConfig 的函数。用法见下文各节示例。
 
@@ -126,7 +126,7 @@ End 可以直接引用每条路径都会经过的上游节点；只在某个分�
 - `QueryDebugProcess {WorkflowId, RunId}`（注意大小写，写成 `RunID`/`WorkflowID` 报缺参）→
   `status`（processing/success/failed）、`output`（End 节点输出的 JSON 字符串）、`nodes{<Code>: {input, output, status, message, costMs}}`、`msg`。
 - LLM 节点失败时看 `nodes[].message`：`LLMRateLimitError 429` 是模型配额被占满，`404 Your account ...` 是没有模型权限。
-- `Flow.run(inputs)` 封装了提交与轮询；构建脚本可加 `--smoke`，用预置样例输入跑并打印结果。改完节点先试跑，再发布。
+- `genios flow run <WorkflowID> '<输入 JSON>'` 封装了提交与轮询。改完节点先试跑，再发布。
 
 ## 6. 推荐的搭建顺序
 

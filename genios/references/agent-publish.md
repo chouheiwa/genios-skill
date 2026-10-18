@@ -1,6 +1,6 @@
 # 智能体：配置、模型参数、发布与渠道审核
 
-`scripts/genios_publish.py` 封装了整条链路。它以**平台草稿为准**读取模型（模型在界面或草稿里切换），只覆盖命令行传入的
+`genios publish` 封装了整条链路。它以**平台草稿为准**读取模型（模型在界面或草稿里切换），只覆盖命令行传入的
 提示词文件、`--max-tokens`、`--reasoning`、`--history-rounds`、问答库召回。
 
 **发布保护**：草稿里思考模式不是 `disabled`、又没有显式传 `--reasoning` 时，脚本拒绝发布——界面上切换模型或思考开关
@@ -54,7 +54,7 @@
 
 ```python
 import os; os.environ["GENIOS_KEY_FILE"] = "<项目外的 key 文件>"
-import genios_chat as ga   # scripts/genios_chat.py
+使用 `genios chat stream` 或 `genios chat block`
 conv = ga.create_conversation()
 for evt in ga.chat_stream("我想登记一个安全隐患", conv):
     ...  # event: message / agent_thought（tool、tool_input）/ agent_thought_end（observation）/ qa_retrieve_end
@@ -63,4 +63,4 @@ for evt in ga.chat_stream("我想登记一个安全隐患", conv):
 - 用流式 `chat_stream`；阻塞模式在“模型 → 工作流 → 模型”链路上容易 504。
 - `agent_thought` 的 `tool_input` 是智能体传给工作流的参数，`agent_thought_end.observation` 是工作流返回值；
   `qa_retrieve_end.docs.outputList[0].metadata.score` 是问答库命中分数。
-- 回复为“大模型接口调用出错”时，先用 `genios_traces.py errors` 看上游原始报错，再按 pitfalls.md 第 5 条处理。
+- 回复为“大模型接口调用出错”时，先用 `genios traces errors` 看上游原始报错，再按 pitfalls.md 第 5 条处理。

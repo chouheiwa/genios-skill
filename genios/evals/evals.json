@@ -4,18 +4,18 @@
   {
    "id": 1,
    "name": "build-workflow-script",
-   "prompt": "我想在 GeniOS 团队空间里新建一个工作流叫 tmp-fraud-check：输入一句话 text，用 LLM 判断是否涉及诈骗，如果是就输出“疑似诈骗”，否则输出“未发现风险”。帮我写一个用平台管理 API 搭建它的 Python 脚本（节点、配置、连线、校验都要有），先别真的执行任何写操作。",
-   "expected_output": "一个用 CreateFlowNode/UpdateFlowNode/UpdateFlowNodeLinks 等节点级 API 搭建的脚本，节点格式正确（LLM 文本输出 raw_output、Start 参数带 Desc、选择器端口 if01/else、字面值 JsonValue、Links 字段），复用 scripts/genios_flow.py 的 Flow 与 genios_api.call，不执行写操作",
+   "prompt": "我想在 GeniOS 团队空间里新建一个工作流叫 tmp-fraud-check：输入一句话 text，用 LLM 判断是否涉及诈骗，如果是就输出“疑似诈骗”，否则输出“未发现风险”。帮我写一个用平台管理 API 搭建它的 Go CLI 命令（节点、配置、连线、校验都要有），先别真的执行任何写操作。",
+   "expected_output": "一个用 CreateFlowNode/UpdateFlowNode/UpdateFlowNodeLinks 等节点级 API 搭建的脚本，节点格式正确（LLM 文本输出 raw_output、Start 参数带 Desc、选择器端口 if01/else、字面值 JsonValue、Links 字段），复用 Go CLI 的 flow 子命令和 genios api，不执行写操作",
    "files": [],
    "assertions": [
-    "脚本使用节点级 API（CreateFlowNode/UpdateFlowNode/UpdateFlowNodeLinks 或 genios_flow.Flow）",
+    "使用节点级 API 或 genios flow（CreateFlowNode/UpdateFlowNode/UpdateFlowNodeLinks 或 genios flow 子命令）",
     "连线字段名为 Links",
     "LLM 文本输出变量为 raw_output",
     "Start 输入参数带 Desc",
     "选择器端口使用 if01 与 else",
     "字面值使用 JsonValue",
     "写入团队空间（读取 GENIOS_TEAM_WORKSPACE 或 genios-project.md 中的 WorkspaceID）",
-    "脚本默认不写平台（dry-run 或 --apply 开关）"
+    "命令默认不写平台（dry-run 或 --apply 开关）"
    ]
   },
   {

@@ -7,7 +7,7 @@
 - 现象：让智能体每轮把工作流返回的 `state` 传回去，第 2 轮传入的总是空字符串，陪练每轮回到开头。
 - 原因：单智能体模式下，平台把工具调用记录存进会话历史（`get_conversation_messages` 查得到），但拼下一轮模型上下文时
   只带用户消息和智能体最终回复，不带 `agent_thought_end.observation`。
-- 证据：`scripts/genios_probe_history.py` 暗号对照实验——工作流返回随机暗号（不出现在回复里），第 2 轮问暗号，
+- 证据：平台行为探测流程 暗号对照实验——工作流返回随机暗号（不出现在回复里），第 2 轮问暗号，
   doubao-seed-2-0-mini 与 doubao-seed-2-1-pro 各 3 次全部答不出，均如实回答“看不到之前的工具返回结果”。
 - 做法：多轮状态放在对话本身（预览、台词都在智能体回复里）；工作流只在最后调用一次，把需要的全部信息作为参数传入
   （例如陪练结束时传入学生全部原话，登记确认时传入最终字段）。
@@ -30,12 +30,12 @@
 
 ## 5. “大模型接口调用出错”
 
-这是平台统一的兜底提示。先 `scripts/genios_traces.py errors` 看调用链 span 的 `Status.Message`（上游原始报错），
-再结合 `genios_traces.py messages` 与 `ListAppPublishHistory` 对上时间段和当时的线上配置：
+这是平台统一的兜底提示。先 `genios traces errors` 看调用链 span 的 `Status.Message`（上游原始报错），
+再结合 `genios traces messages <AppID>` 与 `ListAppPublishHistory` 对上时间段和当时的线上配置：
 
 | 具体错误 | 含义 | 做法 |
 |---|---|---|
-| `400 InvalidParameter: Unsupported thinking type for the current model: auto` | 智能体思考模式不被该模型支持 | `--reasoning disabled` 重新发布；`genios_publish.py` 会拦截草稿里的非 disabled 值 |
+| `400 InvalidParameter: Unsupported thinking type for the current model: auto` | 智能体思考模式不被该模型支持 | `--reasoning disabled` 重新发布；`genios publish` 会拦截草稿里的非 disabled 值 |
 | `400 ... tool name ... must match ^[a-zA-Z0-9_-]+$`（DeepSeek 系列） | DeepSeek 要求工具名只能是英文字母、数字、下划线、连字符，中文工作流名会直接失败 | 用 DeepSeek 前把工作流改成英文名；否则别选它当智能体模型 |
 | `429 ModelAccountTpmRateLimitExceeded` | 模型账号每分钟 token 配额被占满（GLM 5.3 flash 疑为全校共享，早上 8 点持续数分钟） | 换模型；演示前先实测 |
 | `404 Your account ... ` | 没有该模型权限（如 GLM-4.7） | 换模型 |
@@ -64,14 +64,14 @@
 - `CreateFlowNode` 传不存在的节点类型（如 `Bot`、`App`）会返回 500，但**节点仍被写进画布**，之后 `GetWorkflow`/`GetChatflow`
   都报 `unknown node Type`，读不出节点 ID 也就删不掉。不要拿节点类型做试探；智能体节点的类型名是 `Agent`。
 - 平台的 API 渠道审核由模型完成：名称或简介写“临时测试、验证后删除”会被驳回（理由是无实际应用价值）。测试件也起一个
-  说得通的业务名称。审核一般 1.5—3 分钟，偶尔卡在 InReview 超过 20 分钟；不影响用 `genios_debug.py` 调试草稿。
+  说得通的业务名称。审核一般 1.5—3 分钟，偶尔卡在 InReview 超过 20 分钟；不影响用 `genios debug` 调试草稿。
 - 对话流调试模式下用户变量写得进、读不回；跨轮状态只能在发布版本上验证（chatflow.md 第 3 节）。
 
 ## 9. 网络与会话
 
 - 阻塞对话模式易 504，用流式。
 - 管理 API 偶发 5xx、TLS 握手超时：`genios_flow.Flow.api` 会重试 3 次；重建是幂等的。
-- 会话可能半小时就失效：走 `genios_api.call()` 自动续期，不要自己拼请求。
+- 会话可能半小时就失效：走 `genios api` 自动续期，不要自己拼请求。
 - Http 节点出站走平台 `ssrf-proxy`，平台在校园内网，访问不到开发机的 localhost。
 
 

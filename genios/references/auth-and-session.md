@@ -7,7 +7,7 @@
 | 用途 | 和已发布智能体对话 | 建/改/删智能体、工作流、问答库、发布 |
 | 网关 | `/api/proxy/api/v1/<接口>`（如 `create_conversation`、`chat_query_v2`、`get_conversation_messages`） | `/api/<service>?Action=<X>&Version=<V>` |
 | 认证 | 请求头 `Apikey: <发布渠道的 API Key>` | 登录会话 cookie + `x-csrf-token` |
-| 客户端 | `scripts/genios_chat.py`（`GENIOS_KEY_FILE` 指向 Key 文件） | `scripts/genios_api.py` 的 `call()` |
+| 客户端 | `genios chat stream|block`（`GENIOS_KEY_FILE` 指向 Key 文件） | `genios api` |
 
 账号中心的 AccessKey/SecretKey 只对未开放的 `:30040` 端口有效，校外用不了；管理 API 只能走登录会话。
 
@@ -33,7 +33,7 @@ Body: JSON（写接口里也显式放 WorkspaceID）
 响应：`{"ResponseMetadata": {..., "Error": {...}?}, "Result": {...}}`。`Error` 存在即业务失败；
 会话过期时不会返回 JSON，而是 302 到统一身份认证或直接给登录页 HTML。
 
-## 自动登录链路（`scripts/genios_auth.py`，仅限开发阶段）
+## 自动登录链路（`genios auth`，仅限开发阶段）
 
 1. `GET https://coze.nankai.edu.cn/` 一路跳转：飞连网关 `/corplink/agw` → `iam.nankai.edu.cn/api/oidc/authorize`
    → `iam.nankai.edu.cn/login`。登录页 HTML 的 `globalInfo.VERSION` 里有前端版本号 `portal-fe-x.y.z`。
@@ -59,12 +59,9 @@ Body: JSON（写接口里也显式放 WorkspaceID）
 
 ## 会话寿命与续期
 
-- 实测会话有时半小时左右就失效。`genios_api.call()` 捕获 302/401/登录页后调用 `relogin()`：读
-  `genios-credentials.env`，登录，写回 `GENIOS_SESSION_FILE`，并原地更新调用方持有的 session dict，再重试一次。
-- 没有账号密码文件时退回旧办法：浏览器开发者工具对任一 `/api/*` 请求 Copy as cURL，从中取 `-b` 的 cookie 和
-  `x-csrf-token` 请求头。
-- 自己写一次性脚本时，`sys.path` 加入本 skill 的 `scripts/`，调用 `genios_api.call(session, workspace, action, body, svc)`，
+- 实测会话有时半小时左右就失效。Go CLI 捕获 302/401/登录页后，会读取本地凭据重新登录，写回 session 文件并重试一次。
+- 没有账号密码时运行 `genios setup`，在只监听本机的管理页面中输入；不要把密码放进对话、命令行或项目文件。
+- 使用 `genios api <Action> <JSON> [--service <service>]`，
   不要另写 urllib 调用，否则拿不到自动续期。`call()` 按服务自动选 Version（见上表，可用 `version=` 覆盖），并自动在
   请求体里补上 WorkspaceID。
-- 项目根目录的识别顺序：`GENIOS_PROJECT_ROOT` → 当前目录所在 git 仓库 → 脚本所在 git 仓库。账号密码文件默认
-  `<项目根>/genios-credentials.env`（可用 `GENIOS_CREDENTIALS_FILE` 覆盖；在项目内时必须被 git 忽略）。
+- `GENIOS_CREDENTIALS_FILE` 和 `GENIOS_SESSION_FILE` 可覆盖默认路径；默认值都在操作系统用户配置目录中。自定义凭据到项目内时必须被 git 忽略，session 则必须放在项目目录外。
